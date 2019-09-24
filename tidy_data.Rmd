@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 ```
 
+## pivot_longer wide to longe
 ```{r}
 pulse_data = haven::read_sas("./data/public_pulse_data.sas7bdat") %>%
   janitor::clean_names() %>%
@@ -27,6 +28,7 @@ mutate(
 
 ```
 
+##  separate
 ```{r}
 litters_data = 
   read_csv(file = "./data/FAS_litters.csv")
@@ -35,6 +37,7 @@ litters_data =
   # Separte the first col from con7 to con and 7
 ```
 
+## pivot_wider long to wider
 ```{r}
 analysis_result = tibble(
   group = c("treatment", "treatment", "placebo", "placebo"),
@@ -49,4 +52,50 @@ pivot_wider(
 
 ```
 
+## lord of ring
+```{r}
+fellowship_ring = 
+  readxl::read_excel("./data/LotR_Words.xlsx", range = "B3:D6") %>%
+  mutate(movie = "fellowship_ring")
+
+two_towers = 
+  readxl::read_excel("./data/LotR_Words.xlsx", range = "F3:H6") %>%
+  mutate(movie = "two_towers")
+
+return_king = 
+  readxl::read_excel("./data/LotR_Words.xlsx", range = "J3:L6") %>%
+  mutate(movie = "return_king")
+
+lotr_tidy = 
+  bind_rows(fellowship_ring,two_towers, return_king) %>% 
+  janitor::clean_names() %>%
+  pivot_longer(
+    female:male,
+    names_to = "sex", 
+    values_to = "words") %>%
+  mutate(race = str_to_lower(race)) %>% 
+  select(movie, everything()) 
+
+lotr_tidy
+
+```
+
+## joint data
+```{r}
+pup_data = 
+  read_csv("./data/FAS_pups.csv", col_types = "ciiiii") %>%
+  janitor::clean_names() %>%
+  mutate(sex = recode(sex, `1` = "male", `2` = "female")) 
+
+litter_data = 
+  read_csv("./data/FAS_litters.csv", col_types = "ccddiiii") %>%
+  janitor::clean_names() %>%
+  select(-pups_survive) %>%
+  mutate(
+    wt_gain = gd18_weight - gd0_weight,
+    group = str_to_lower(group))
+
+fas_data = 
+  left_join(pup_data, litter_data, by = "litter_number")
+```
 
